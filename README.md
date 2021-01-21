@@ -1,4 +1,4 @@
-:: DNStap Reader
+# DNStap Reader
 
 dnstap_reader contains developing software for read dnstap data (from file or socket)
 
@@ -6,7 +6,7 @@ What is it dnstap?
 
 Read this :
 
-# DNS Logging 
+## DNS Logging 
 _(from https://www.vanimpe.eu/2018/12/27/dnstap-for-improved-dns-logging-on-ubuntu/)_
 
 DNS logging and monitoring is important! Monitoring DNS logs allows you to analyze and detect C&C traffic and have access to crucial information to reduce the dwell time and detect breaches. Combined with Passive DNS it’s a very valuable data source to be used during incident response.
@@ -19,7 +19,7 @@ Another way of capturing DNS logs is via packet capture. This is a good solution
 
 All this will probably not be a big issue in smaller environments but if you scale up there will be a time when you hit the system limits. Does this mean you should then give up on DNS logging? Not at all!
 
-# Dnstap
+## Dnstap
 
 An alternative to DNS query logging is dnstap. Dnstap is a flexible, structured binary log format for DNS software that uses Protocol Buffers to encode events in an implementation-neutral format. Dnstap exists for most open source DNS servers as Bind, Knot and Unbound. The major advantage of Dnstap is demonstrated via its architecture schema.
 
