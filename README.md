@@ -13,7 +13,7 @@ DNS logging and monitoring is important! Monitoring DNS logs allows you to analy
 
 But DNS logging comes at a price. Every log operation requires the system to write out an entry to disk (besides also properly formatting the log string). This is a slow I/O-operation and limits the maximum amount of queries that your system can answer. A graph (https://www.vanimpe.eu/wp-content/uploads/2018/12/bind9-300x236.jpg) from a presentation from Farsight Security shows the difference of running BIND9 with or without query logging.
 
-![graph] (https://www.vanimpe.eu/wp-content/uploads/2018/12/bind9-300x236.jpg)
+![graph](https://www.vanimpe.eu/wp-content/uploads/2018/12/bind9-300x236.jpg)
 
 Another way of capturing DNS logs is via packet capture. This is a good solution if you do not have direct access to the DNS server. If you manage the DNS server then doing packet capture is not the most efficient solution though. Packet capture is in essence re-doing the same stuff as the things your DNS server is already doing, for example packet reassembly and session management. Although this approach makes it more difficult to tie individual responses to queries, as default query logging doesn’t log the responses it’s your best best to keep track of the DNS answers (for example via Bro) based on your traffic.
 
@@ -23,7 +23,7 @@ All this will probably not be a big issue in smaller environments but if you sca
 
 An alternative to DNS query logging is dnstap. Dnstap is a flexible, structured binary log format for DNS software that uses Protocol Buffers to encode events in an implementation-neutral format. Dnstap exists for most open source DNS servers as Bind, Knot and Unbound. The major advantage of Dnstap is demonstrated via its architecture schema.
 
-![schema] (https://www.vanimpe.eu/wp-content/uploads/2018/12/512x378-dnstap-300x221.png)
+![schema](https://www.vanimpe.eu/wp-content/uploads/2018/12/512x378-dnstap-300x221.png)
 
 The encoding of events and writing to disk happens outside the DNS handling system on a “copy” of the DNS message. This means that slow disk performance during log operations will have less of a negative impact on the system as a whole. The generation of the messages is done from within the DNS handling system, meaning that all relevant DNS information can be included and does not need to be reconstructed from observing the traffic.
 
