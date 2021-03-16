@@ -257,6 +257,7 @@ def main():
         try:
            sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
            sock.bind(socketfile)
+           os.chmod(socketfile,666)
            sock.listen(1)
            while True:
               connection, client_address = sock.accept()

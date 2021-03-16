@@ -88,9 +88,14 @@ def parse_frame(frame):
 
     if msg_type in [4, 6]: ## 6 CLIENT_RESPONSE - 4 RESOLVER_RESPONSE
         query = dns.message.from_wire(dnstap_data.message.response_message)
+        q_rcode = dns.rcode.from_flags(query.flags,query.ednsflags);
+
         if msg_type == 6 or (msg_type == 4 and verbose):
+         if not doCut or (not q_rcode == 0):
             data_dict = {
                 'timestamp': dnstap_data.message.response_time_sec,
+		'identity': dnstap_data.identity.decode('utf-8'),
+		'version':  dnstap_data.version.decode('utf-8'),
                 'query_type': get_query_type(msg_type),
                 'query_address': str(ipaddress.ip_address(
                     dnstap_data.message.query_address
@@ -106,20 +111,59 @@ def parse_frame(frame):
                 ),
                 'rcode': dns.rcode.from_flags(query.flags, query.ednsflags),
                 'flags': dns.flags.to_text(query.flags),
-		'question':[],
+		'question': [],
                 'answers': [],
                 'authorities':[],
             }
             for question in query.question:
-               data_dict['question'].append(str(question).replace("\n", " | "))
+               data_dict['question'].append(str(question).split("\n"))
+#               data_dict['question'].append(str(question).replace("\n", " | "))
             for answer in query.answer:
-               data_dict['answers'].append(str(answer).replace("\n", " | "))
+               data_dict['answers'].append(str(answer).split("\n"))
+#               data_dict['answers'].append(str(answer).replace("\n", " | "))
             for auth in query.authority:
-               data_dict['authorities'].append(str(auth).replace("\n", " | "))
-
+               data_dict['authorities'].append(str(auth).split("\n"))
+#               data_dict['authorities'].append(str(auth).replace("\n", " | "))
             send2logstash(json.dumps(data_dict))
             if tosyslog:
                log_message(tosyslog, json.dumps(data_dict))
+
+         else:
+
+            for answers in query.answer:
+              for answer in str(answers).split("\n"):
+                #data_dict['answers'].append(str(answer).split("\n"))
+                data_dict = {
+                  'timestamp': dnstap_data.message.response_time_sec,
+  		  'identity': dnstap_data.identity.decode('utf-8'),
+		  'version':  dnstap_data.version.decode('utf-8'),
+                  'query_type': get_query_type(msg_type),
+                  'query_address': str(ipaddress.ip_address(
+                      dnstap_data.message.query_address
+                  )),
+                  'query_port': dnstap_data.message.query_port,
+                  'response_address': str(ipaddress.ip_address(
+                    dnstap_data.message.response_address
+                  )),
+                  'response_port': dnstap_data.message.response_port,
+                  'query_id': query.id,
+                  'rcode_string': dns.rcode.to_text(
+                      dns.rcode.from_flags(query.flags, query.ednsflags)
+                  ),
+                  'rcode': dns.rcode.from_flags(query.flags, query.ednsflags),
+                  'flags': dns.flags.to_text(query.flags),
+                  'question':[],
+                  'answers': str(answer),
+                  'authorities':[],
+                }
+                for question in query.question:
+                   data_dict['question'].append(str(question).split("\n"))
+                for auth in query.authority:
+                   data_dict['authorities'].append(str(auth).split("\n"))
+
+                send2logstash(json.dumps(data_dict))
+                if tosyslog:
+                   log_message(tosyslog, json.dumps(data_dict))
 
     # OTHER QUERY
     else:
@@ -127,6 +171,8 @@ def parse_frame(frame):
             query = dns.message.from_wire(dnstap_data.message.query_message)
             data_dict = {
                 'timestamp': dnstap_data.message.response_time_sec,
+  		'identity': dnstap_data.identity.decode('utf-8'),
+		'version':  dnstap_data.version.decode('utf-8'),
                 'query_type': get_query_type(msg_type),
                 'query_address': str(ipaddress.ip_address(
                     dnstap_data.message.query_address
@@ -147,11 +193,14 @@ def parse_frame(frame):
                 'authorities':[],
             }
             for question in query.question:
-               data_dict['question'].append(str(question).replace("\n", " | "))
+               data_dict['question'].append(str(question).split("\n"))
+##               data_dict['question'].append(str(question).replace("\n", " | "))
             for answer in query.answer:
-               data_dict['answers'].append(str(answer).replace("\n", " | "))
+               data_dict['answers'].append(str(answer).split("\n"))
+#               data_dict['answers'].append(str(answer).replace("\n", " | "))
             for auth in query.authority:
-               data_dict['authorities'].append(str(auth).replace("\n", " | "))
+               data_dict['authorities'].append(str(auth).split("\n"))
+#               data_dict['authorities'].append(str(auth).replace("\n", " | "))
 
             send2logstash(json.dumps(data_dict))
             if tosyslog:
@@ -211,10 +260,18 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", 
                         action="store_true", help="Verbose log all query")
 
+    parser.add_argument("-c", "--cut", 
+                        action="store_true", help="Cut multiple <answers> to single event")
+
     parser.add_argument("-d", "--dest-host",
                         required=True, help="logstash host")
+
     parser.add_argument("-p", "--dest-port",
                         required=True, help="logstash port (udp)")
+
+    parser.add_argument("-t", "--log-type", type=str, 
+                        default='json', help="Type log [json|cef] (json default)")
+
 
     logdest = parser.add_mutually_exclusive_group(required=False)
     logdest.add_argument(
@@ -235,6 +292,7 @@ if __name__ == "__main__":
     verbose = args.verbose
     socketfile = args.socket
     tosyslog = args.to_syslog
+    doCut = args.cut
 
     # Priority: LOG_EMERG, LOG_ALERT, LOG_CRIT,
     #           LOG_ERR, LOG_WARNING, LOG_NOTICE, LOG_INFO, LOG_DEBUG.
