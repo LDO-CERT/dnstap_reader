@@ -28,3 +28,9 @@ An alternative to DNS query logging is dnstap. Dnstap is a flexible, structured 
 The encoding of events and writing to disk happens outside the DNS handling system on a “copy” of the DNS message. This means that slow disk performance during log operations will have less of a negative impact on the system as a whole. The generation of the messages is done from within the DNS handling system, meaning that all relevant DNS information can be included and does not need to be reconstructed from observing the traffic.
 
 Speed isn’t the only advantage of dnstap. In case of a very high load or peak, the system can start dropping the log messages but still process the queries. Additionally, the logged information contains all the details of the request making it a treasure-cave for future research.
+
+## Logstash 
+
+I added lostastash configuration for [SOF-ELK](https://github.com/philhagen/sof-elk) platform.
+
+![DNS_dashboard-SOF-ELK.jpg](https://github.com/LDO-CERT/dnstap_reader/blob/master/DNS_dashboard-SOF-ELK.jpg)
