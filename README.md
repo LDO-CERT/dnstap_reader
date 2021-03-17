@@ -78,7 +78,7 @@ Speed isn’t the only advantage of dnstap. In case of a very high load or peak,
 
 # Logstash 
 
-I added lostastash configuration for [SOF-ELK](https://github.com/philhagen/sof-elk) platform.
+I added logstash configuration for [SOF-ELK](https://github.com/philhagen/sof-elk) platform.
 
 ![DNS_dashboard-SOF-ELK.jpg](https://github.com/LDO-CERT/dnstap_reader/blob/master/DNS_dashboard-SOF-ELK.jpg)
 
