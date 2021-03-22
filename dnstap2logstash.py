@@ -88,7 +88,7 @@ def parse_frame(frame):
 
     if msg_type in [4, 6]: ## 6 CLIENT_RESPONSE - 4 RESOLVER_RESPONSE
         query = dns.message.from_wire(dnstap_data.message.response_message)
-        q_rcode = dns.rcode.from_flags(query.flags,query.ednsflags);
+        q_rcode = dns.rcode.from_flags(query.flags,query.ednsflags)
 
         if msg_type == 6 or (msg_type == 4 and verbose):
          if not doCut or (not q_rcode == 0):
@@ -105,6 +105,7 @@ def parse_frame(frame):
                     dnstap_data.message.response_address
                 )),
                 'response_port': dnstap_data.message.response_port,
+                'response_len': len(dnstap_data.message.response_message),
                 'query_id': query.id,
                 'rcode_string': dns.rcode.to_text(
                     dns.rcode.from_flags(query.flags, query.ednsflags)
@@ -146,6 +147,7 @@ def parse_frame(frame):
                     dnstap_data.message.response_address
                   )),
                   'response_port': dnstap_data.message.response_port,
+                  'response_len': len(dnstap_data.message.response_message),
                   'query_id': query.id,
                   'rcode_string': dns.rcode.to_text(
                       dns.rcode.from_flags(query.flags, query.ednsflags)
@@ -169,6 +171,7 @@ def parse_frame(frame):
     else:
         if verbose:
             query = dns.message.from_wire(dnstap_data.message.query_message)
+
             data_dict = {
                 'timestamp': dnstap_data.message.response_time_sec,
   		'identity': dnstap_data.identity.decode('utf-8'),
@@ -182,6 +185,7 @@ def parse_frame(frame):
                     dnstap_data.message.response_address
                 )),
                 'response_port': dnstap_data.message.response_port,
+                'response_len': len(dnstap_data.message.response_message),
                 'query_id': query.id,
                 'rcode_string': dns.rcode.to_text(
                     dns.rcode.from_flags(query.flags, query.ednsflags)

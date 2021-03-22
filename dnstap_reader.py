@@ -10,6 +10,7 @@ from dnstap_pb2 import *
 from pprint import pprint
 from var_dump import var_dump
 from daemonize import Daemonize
+from sys import getsizeof
 import getopt, sys, datetime
 import os, socket, io
 import framestream
@@ -169,16 +170,17 @@ def parse_frame(frame):
           #msg +=  str(' ')+str(dns.rcode.from_flags(query.flags,query.ednsflags))
           msg +=  str(' Flags: ')
           msg +=  str(dns.flags.to_text(query.flags))
+          msg += " LEN response_message: "+str(len(dnstap_data.message.response_message))
 
           for answer in query.answer:
-            msg +=  ' Answer: '+str(answer).replace('\n',' | ')
+            msg +=  " | "+str(answer).replace('\n',' | ')
 
           for auth in query.authority:
             msg +=  ' Authority: '+str(auth).replace('\n',' | ')
 
 
           log_message(tosyslog,msg)
-            #print(dnstap_data)
+#          print(dnstap_data)
 
     ## CLIENT_RESPONSE
     elif dnstap_data.message.type == 6: 
@@ -209,9 +211,10 @@ def parse_frame(frame):
         #msg +=  str(' ')+str(dns.rcode.from_flags(query.flags,query.ednsflags))
         msg +=  str(' Flags: ')
         msg +=  str(dns.flags.to_text(query.flags))
+        msg += " LEN response_message: "+str(len(dnstap_data.message.response_message))
 
         for answer in query.answer:
-          msg +=  ' Answer: '+str(answer).replace('\n',' | ')
+          msg +=  " "+str(answer).replace('\n',' | ')
 
         if verbose:
           for auth in query.authority:
@@ -222,7 +225,7 @@ def parse_frame(frame):
 
         if debug:
            print(print_dnsflag_fromhex(query.flags))
-           print(query)
+#           print(query)
 #           var_dump(query)
 
    ## OTHER QUERY
