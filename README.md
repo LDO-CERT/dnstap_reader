@@ -83,9 +83,9 @@ I added logstash configuration for [SOF-ELK](https://github.com/philhagen/sof-el
 ![DNS_dashboard-SOF-ELK.jpg](https://github.com/LDO-CERT/dnstap_reader/blob/master/DNS_dashboard-SOF-ELK.jpg)
 
 
-# DNS datatype / response code
+# DNS datatype / response code / Direction
 ```
-Quiet text output format mnemonics:
+Query Direction:
   AQ: AUTH_QUERY (type: 1)
   AR: AUTH_RESPONSE (type: 2)
   RQ: RESOLVER_QUERY (type: 3)
