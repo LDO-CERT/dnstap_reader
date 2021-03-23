@@ -38,7 +38,8 @@ class MyParser(argparse.ArgumentParser):
 
 def print_mnemonics():
      print(
-            "Quiet text output format mnemonics:\n",
+            "Quiet text output format mnemonics\n\n",
+            "Query Direction:\n",
             "  AQ: AUTH_QUERY (type: 1)\n",
             "  AR: AUTH_RESPONSE (type: 2)\n",
             "  RQ: RESOLVER_QUERY (type: 3)\n",
@@ -105,7 +106,7 @@ def dnsflag_fromhex(n):
         return "CD (Checking Disabled)"
 
 
-def get_query_type(type):
+def get_query_direction(type):
     switcher = {
         1: "AQ",
         2: "AR",
@@ -135,7 +136,7 @@ def parse_frame(frame):
         if msg_type == 6 or (msg_type == 4 and verbose):
             json_log = {
                 'timestamp': dnstap_data.message.response_time_sec,
-                'query_type': get_query_type(msg_type),
+                'query_direction': get_query_direction(msg_type),
                 'query_address': ipaddress.ip_address(
                     dnstap_data.message.query_address
                 ),
@@ -195,7 +196,7 @@ def parse_frame(frame):
             query = dns.message.from_wire(dnstap_data.message.query_message)
             msg = "{} {} {}:{} -> {}:{} Id: #{}".format(
                 dnstap_data.message.query_time_sec,
-                get_query_type(msg_type),
+                get_query_direction(msg_type),
                 ipaddress.ip_address(dnstap_data.message.query_address),
                 dnstap_data.message.query_port,
                 ipaddress.ip_address(dnstap_data.message.response_address),

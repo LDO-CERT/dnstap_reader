@@ -33,7 +33,9 @@ def usage():
     print(" -l\tSend output to syslog (demonize) ** Only with socket")
     print("Default mode show only Client Query e Client Response, use -v for show all dns query")
     print("")
-    print("Quiet text output format mnemonics:")
+    print("Quiet text output format mnemonics")
+    print("")
+    print("Query Direction:")
     print("  AQ: AUTH_QUERY (type: 1)")
     print("  AR: AUTH_RESPONSE (type: 2)")
     print("  RQ: RESOLVER_QUERY (type: 3)")
@@ -86,7 +88,7 @@ def print_dnsflag_fromhex(n):
     if n & int('0x0010',16):
         print('CD (Checking Disabled)')
 
-def get_query_type(type):
+def get_query_direction(type):
     switcher={
         1:'AQ',
         2:'AR',
@@ -116,7 +118,7 @@ def parse_frame(frame):
         for question in query.question:
           msg = str(datetime.datetime.fromtimestamp(dnstap_data.message.query_time_sec).strftime('%Y-%m-%d %H:%M:%S'))
           #msg +=  str(' DNS')
-          msg +=  ' '+str(get_query_type(dnstap_data.message.type))+str(" ")
+          msg +=  ' '+str(get_query_direction(dnstap_data.message.type))+str(" ")
           msg +=  str(ipaddress.ip_address(dnstap_data.message.query_address))+str(':')+str(dnstap_data.message.query_port)
           msg +=  str(' -> ')
           msg +=  str(ipaddress.ip_address(dnstap_data.message.response_address))+str(':')+str(dnstap_data.message.response_port)
@@ -140,7 +142,7 @@ def parse_frame(frame):
           for question in query.question:
             msg = str(datetime.datetime.fromtimestamp(dnstap_data.message.query_time_sec).strftime('%Y-%m-%d %H:%M:%S'))
             #msg +=  str(' DNS')
-            msg +=  ' '+str(get_query_type(dnstap_data.message.type))+str(" ")
+            msg +=  ' '+str(get_query_direction(dnstap_data.message.type))+str(" ")
             msg +=  str(ipaddress.ip_address(dnstap_data.message.query_address))+str(':')+str(dnstap_data.message.query_port)
             msg +=  str(' -> ')
             msg +=  str(ipaddress.ip_address(dnstap_data.message.response_address))+str(':')+str(dnstap_data.message.response_port)
@@ -160,7 +162,7 @@ def parse_frame(frame):
           query = dns.message.from_wire(dnstap_data.message.response_message)
           msg = str(datetime.datetime.fromtimestamp(dnstap_data.message.query_time_sec).strftime('%Y-%m-%d %H:%M:%S'))
           #msg +=  str(' DNS')
-          msg +=  ' '+str(get_query_type(dnstap_data.message.type))+str(" ")
+          msg +=  ' '+str(get_query_direction(dnstap_data.message.type))+str(" ")
           msg +=  str(ipaddress.ip_address(dnstap_data.message.query_address))+str(':')+str(dnstap_data.message.query_port)
           msg +=  str(' -> ')
           msg +=  str(ipaddress.ip_address(dnstap_data.message.response_address))+str(':')+str(dnstap_data.message.response_port)
@@ -189,7 +191,7 @@ def parse_frame(frame):
 #        for question in query.question:
 #          msg = str(datetime.datetime.fromtimestamp(dnstap_data.message.response_time_sec).strftime('%Y-%m-%d %H:%M:%S'))
 #          #msg +=  str(' DNS')
-#          msg +=  ' '+str(get_query_type(dnstap_data.message.type))+str(" ")
+#          msg +=  ' '+str(get_query_direction(dnstap_data.message.type))+str(" ")
 #          msg +=  str(ipaddress.ip_address(dnstap_data.message.query_address))+str(':')+str(dnstap_data.message.query_port)
 #          msg +=  str(' -> ')
 #          msg +=  str(ipaddress.ip_address(dnstap_data.message.response_address))+str(':')+str(dnstap_data.message.response_port)
@@ -201,7 +203,7 @@ def parse_frame(frame):
 
         msg = str(datetime.datetime.fromtimestamp(dnstap_data.message.response_time_sec).strftime('%Y-%m-%d %H:%M:%S'))
         #msg +=  str(' DNS')
-        msg +=  ' '+str(get_query_type(dnstap_data.message.type))+str(" ")
+        msg +=  ' '+str(get_query_direction(dnstap_data.message.type))+str(" ")
         msg +=  str(ipaddress.ip_address(dnstap_data.message.query_address))+str(':')+str(dnstap_data.message.query_port)
         msg +=  str(' -> ')
         msg +=  str(ipaddress.ip_address(dnstap_data.message.response_address))+str(':')+str(dnstap_data.message.response_port)
@@ -234,7 +236,7 @@ def parse_frame(frame):
             query = dns.message.from_wire(dnstap_data.message.query_message)
             msg = str(datetime.datetime.fromtimestamp(dnstap_data.message.query_time_sec).strftime('%Y-%m-%d %H:%M:%S'))
             #msg +=  str(' DNS')
-            msg +=  ' '+str(get_query_type(dnstap_data.message.type))+str(" ")
+            msg +=  ' '+str(get_query_direction(dnstap_data.message.type))+str(" ")
             msg +=  str(ipaddress.ip_address(dnstap_data.message.query_address))+str(':')+str(dnstap_data.message.query_port)
             msg +=  str(' -> ')
             msg +=  str(ipaddress.ip_address(dnstap_data.message.response_address))+str(':')+str(dnstap_data.message.response_port)

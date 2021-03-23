@@ -61,7 +61,7 @@ def dnsflag_fromhex(n):
         return "CD (Checking Disabled)"
 
 
-def get_query_type(type):
+def get_query_direction(type):
     switcher = {
         1: "AQ",
         2: "AR",
@@ -96,7 +96,7 @@ def parse_frame(frame):
                 'timestamp': dnstap_data.message.response_time_sec,
 		'identity': dnstap_data.identity.decode('utf-8'),
 		'version':  dnstap_data.version.decode('utf-8'),
-                'query_type': get_query_type(msg_type),
+                'query_direction': get_query_direction(msg_type),
                 'query_address': str(ipaddress.ip_address(
                     dnstap_data.message.query_address
                 )),
@@ -138,7 +138,7 @@ def parse_frame(frame):
                   'timestamp': dnstap_data.message.response_time_sec,
   		  'identity': dnstap_data.identity.decode('utf-8'),
 		  'version':  dnstap_data.version.decode('utf-8'),
-                  'query_type': get_query_type(msg_type),
+                  'query_direction': get_query_direction(msg_type),
                   'query_address': str(ipaddress.ip_address(
                       dnstap_data.message.query_address
                   )),
@@ -176,7 +176,7 @@ def parse_frame(frame):
                 'timestamp': dnstap_data.message.response_time_sec,
   		'identity': dnstap_data.identity.decode('utf-8'),
 		'version':  dnstap_data.version.decode('utf-8'),
-                'query_type': get_query_type(msg_type),
+                'query_direction': get_query_direction(msg_type),
                 'query_address': str(ipaddress.ip_address(
                     dnstap_data.message.query_address
                 )),
