@@ -24,6 +24,7 @@ from var_dump import var_dump
 from daemonize import Daemonize
 from datetime import datetime
 
+connection = False
 
 class MyParser(argparse.ArgumentParser):
     def error(self, message):
@@ -208,7 +209,24 @@ def parse_frame(frame):
             query = dns.message.from_wire(dnstap_data.message.query_message)
             log_message(tosyslog, query)
 
+def handshake():
+    global connection
+    # Ok, I need Frame Streams handshake code here.
+    # https://www.nlnetlabs.nl/bugs-script/show_bug.cgi?id=741#c15
+    log_message(True, ">> Waiting READY FRAME")
+    data = connection.recv(262144)
+    log_message(True, "<< Sending ACCEPT FRAME")
+    connection.sendall(
+      b"\x00\x00\x00\x00\x00\x00\x00\x22\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x16\x70\x72\x6f\x74\x6f\x62\x75\x66\x3a\x64\x6e\x73\x74\x61\x70\x2e\x44\x6e\x73\x74\x61\x70"
+    )
+    log_message(True, ">> Waiting START FRAME")
+    data = connection.recv(262144)
+    start = data
+    return start
+
+
 def main():
+    global connection
     if socketfile:
         try:
             sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -219,23 +237,9 @@ def main():
                 connection, client_address = sock.accept()
                 log_message(tosyslog, "New incoming connection...")
                 try:
-                    # Ok, I need Frame Streams handshake code here.
-                    # https://www.nlnetlabs.nl/bugs-script/show_bug.cgi?id=741#c15
-                    log_message(tosyslog, ">> Waiting READY FRAME")
-                    data = connection.recv(262144)
-                    if debug:
-                        var_dump(data)
-                    log_message(tosyslog, "<< Sending ACCEPT FRAME")
-                    connection.sendall(
-                        b"\x00\x00\x00\x00\x00\x00\x00\x22\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x16\x70\x72\x6f\x74\x6f\x62\x75\x66\x3a\x64\x6e\x73\x74\x61\x70\x2e\x44\x6e\x73\x74\x61\x70"
-                    )
-                    if debug:
-                        logging.debug(
-                            b"\x00\x00\x00\x00\x00\x00\x00\x22\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x16\x70\x72\x6f\x74\x6f\x62\x75\x66\x3a\x64\x6e\x73\x74\x61\x70\x2e\x44\x6e\x73\x74\x61\x70"
-                        )
-                    log_message(tosyslog, ">> Waiting START FRAME")
-                    data = connection.recv(262144)
-                    start = data
+                    connection, client_address = sock.accept()
+                    log_message(True, "New incoming connection...")
+                    start = handshake()
                     if debug:
                         var_dump(data)
                     while True:
@@ -264,7 +268,15 @@ def main():
         for frame in framestream.reader(open(tapfile, "rb")):
             parse_frame(frame)
 
+def SIGHUPrecived(signalNumber, frame):
+    log_message(tosyslog, "(SIGHUP) Restarting handshake")
+    return handshake()
+
+
 if __name__ == "__main__":
+
+    signal.signal(signal.SIGHUP, SIGHUPrecived)
+
     parser = MyParser(description="DNSTAP reader to passivedns log format")
     parser.add_argument("-m", "--mnemonics",
                         action="store_true", help="Mnemonics datatype (help)")

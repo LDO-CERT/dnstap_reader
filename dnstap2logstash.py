@@ -17,11 +17,13 @@ import dns.rrset
 import shlex
 import json
 import syslog
+import signal
 from dnstap_pb2 import Dnstap
 from var_dump import var_dump
 from daemonize import Daemonize
 from datetime import datetime
 
+connection = False
 
 class MyParser(argparse.ArgumentParser):
     def error(self, message):
@@ -210,7 +212,25 @@ def parse_frame(frame):
             if tosyslog:
                log_message(tosyslog, json.dumps(data_dict))
 
+
+def handshake():
+    global connection
+    # Ok, I need Frame Streams handshake code here.
+    # https://www.nlnetlabs.nl/bugs-script/show_bug.cgi?id=741#c15
+    log_message(True, ">> Waiting READY FRAME")
+    data = connection.recv(262144)
+    log_message(True, "<< Sending ACCEPT FRAME")
+    connection.sendall(
+      b"\x00\x00\x00\x00\x00\x00\x00\x22\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x16\x70\x72\x6f\x74\x6f\x62\x75\x66\x3a\x64\x6e\x73\x74\x61\x70\x2e\x44\x6e\x73\x74\x61\x70"
+    )
+    log_message(True, ">> Waiting START FRAME")
+    data = connection.recv(262144)
+    start = data
+    return start
+
+
 def main():
+    global connection
     log_message(True,"Logstash host "+logstash_host+":"+logstash_port)
     if tosyslog:
        log_message(True,"Option for store copy of log locally active")
@@ -224,18 +244,8 @@ def main():
             while True:
                 connection, client_address = sock.accept()
                 log_message(True, "New incoming connection...")
+                start = handshake()
                 try:
-                    # Ok, I need Frame Streams handshake code here.
-                    # https://www.nlnetlabs.nl/bugs-script/show_bug.cgi?id=741#c15
-                    log_message(True, ">> Waiting READY FRAME")
-                    data = connection.recv(262144)
-                    log_message(True, "<< Sending ACCEPT FRAME")
-                    connection.sendall(
-                        b"\x00\x00\x00\x00\x00\x00\x00\x22\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x16\x70\x72\x6f\x74\x6f\x62\x75\x66\x3a\x64\x6e\x73\x74\x61\x70\x2e\x44\x6e\x73\x74\x61\x70"
-                    )
-                    log_message(True, ">> Waiting START FRAME")
-                    data = connection.recv(262144)
-                    start = data
                     while True:
                         data = connection.recv(262144)
                         if data:
@@ -259,7 +269,17 @@ def main():
         for frame in framestream.reader(open(tapfile, "rb")):
             parse_frame(frame)
 
+
+
+def SIGHUPrecived(signalNumber, frame):
+    log_message(tosyslog, "(SIGHUP) Restarting handshake")
+    return handshake()
+
+
 if __name__ == "__main__":
+
+    signal.signal(signal.SIGHUP, SIGHUPrecived)
+
     parser = MyParser(description="DNSTAP reader to logstash")
     parser.add_argument("-v", "--verbose", 
                         action="store_true", help="Verbose log all query")
