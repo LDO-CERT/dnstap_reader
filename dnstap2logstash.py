@@ -237,6 +237,8 @@ def main():
     if socketfile:
         try:
             log_message(True,"Opening socket to "+socketfile)
+            if os.path.isfile(socketfile):
+               os.unlink(socketfile)
             sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             sock.bind(socketfile)
             os.chmod(socketfile,666)
@@ -308,6 +310,9 @@ if __name__ == "__main__":
     group.add_argument("-f", "--file", help="file")
     group.add_argument("-s", "--socket", help="socket")
 
+    parser.add_argument("-n", "--nodaemon", 
+                        action="store_true", help="Running program in foreground")
+
     args = parser.parse_args()
 
     logstash_host = args.dest_host
@@ -317,6 +322,7 @@ if __name__ == "__main__":
     socketfile = args.socket
     tosyslog = args.to_syslog
     doCut = args.cut
+    noDaemon = args.nodaemon
 
     # Priority: LOG_EMERG, LOG_ALERT, LOG_CRIT,
     #           LOG_ERR, LOG_WARNING, LOG_NOTICE, LOG_INFO, LOG_DEBUG.
@@ -327,10 +333,14 @@ if __name__ == "__main__":
     syslog.openlog(
       "DNStap", logoption=syslog.LOG_PID, facility=syslog.LOG_DAEMON
       )
-    pid = "/var/run/dnstap.pid"
-    daemon = Daemonize(app="DNStap", pid=pid,
+
+    if not noDaemon:
+       pid = "/var/run/dnstap.pid"
+       daemon = Daemonize(app="DNStap", pid=pid,
                         action=main, auto_close_fds=True)
 
-    # ok, going in to darkness
-    # https://daemonize.readthedocs.io/en/latest/
-    daemon.start()
+       # ok, going in to darkness
+       # https://daemonize.readthedocs.io/en/latest/
+       daemon.start()
+    else:
+       main()
